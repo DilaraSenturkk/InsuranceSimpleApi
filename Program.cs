@@ -1,8 +1,11 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using InsuranceSimpleApi.Data;
 using InsuranceSimpleApi.Interfaces;
 using InsuranceSimpleApi.Middleware;
 using InsuranceSimpleApi.Models;
 using InsuranceSimpleApi.Services;
+using InsuranceSimpleApi.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,7 +14,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AUTH
+// CONTROLLERS
+builder.Services.AddControllers();
+
+// FLUENT VALIDATION
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+
+// ERROR HANDLING
+builder.Services.AddScoped<ErrorHandlerMiddleware>();
+
+// AUTHENTICATION - JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -31,7 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// DB
+// DATABASE
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -41,7 +55,6 @@ builder.Services.AddScoped<IAuthenticatedUser>(sp => sp.GetRequiredService<Authe
 builder.Services.AddScoped<AuthenticatedUserMiddleware>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
-builder.Services.AddControllers();
 
 // SWAGGER
 builder.Services.AddEndpointsApiExplorer();
@@ -73,7 +86,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -82,10 +94,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// MIDDLEWARE PIPELINE
+app.UseMiddleware<ErrorHandlerMiddleware>();
+
 app.UseAuthentication();
-app.UseAuthorization();
 app.UseMiddleware<AuthenticatedUserMiddleware>();
+app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
-

@@ -47,10 +47,11 @@ namespace InsuranceSimpleApi.Controllers
         public IActionResult Login(LoginDto dto)
         {
             var user = _context.Users.FirstOrDefault(x => x.Username == dto.Username);
-            if (user == null) return Unauthorized();
+            if (user == null)
+                throw new UnauthorizedAccessException("Kullanıcı bulunamadı");
 
             if (!_passwordService.Verify(user, dto.Password))
-                return Unauthorized();
+                throw new UnauthorizedAccessException("Şifre hatalı");
 
             var token = _jwtService.GenerateToken(user);
             return Ok(new { token });
