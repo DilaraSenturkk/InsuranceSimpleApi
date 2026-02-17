@@ -3,12 +3,9 @@ using InsuranceSimpleApi.DTOs;
 using InsuranceSimpleApi.Models;
 using InsuranceSimpleApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace InsuranceSimpleApi.Controllers
 {
-
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
@@ -17,10 +14,7 @@ namespace InsuranceSimpleApi.Controllers
         private readonly PasswordService _passwordService;
         private readonly JwtService _jwtService;
 
-        public AuthController(
-            AppDbContext context,
-            PasswordService passwordService,
-            JwtService jwtService)
+        public AuthController(AppDbContext context,PasswordService passwordService,JwtService jwtService)
         {
             _context = context;
             _passwordService = passwordService;
@@ -28,34 +22,78 @@ namespace InsuranceSimpleApi.Controllers
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Register(RegisterDto dto)
         {
-            var user = new User { Username = dto.Username };
+            var user = new User
+            {
+                Username = dto.Username,
+                Role = "User"
+            };
+
             user.PasswordHash = _passwordService.Hash(user, dto.Password);
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            return Ok();
+            return Ok("Kullanıcı oluşturuldu");
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Login(LoginDto dto)
         {
             var user = _context.Users.FirstOrDefault(x => x.Username == dto.Username);
             if (user == null)
-                throw new UnauthorizedAccessException("Kullanıcı bulunamadı");
+                return Unauthorized("Kullanıcı bulunamadı");
 
             if (!_passwordService.Verify(user, dto.Password))
-                throw new UnauthorizedAccessException("Şifre hatalı");
+                return Unauthorized("Şifre hatalı");
 
-            var token = _jwtService.GenerateToken(user);
-            return Ok(new { token });
+            var accessToken = _jwtService.GenerateToken(user);
+
+           
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                accessToken,
+                refreshToken
+            });
+        }
+
+        [HttpPost("refresh-token")]
+        public IActionResult RefreshToken(TokenRefreshDto dto)
+        {
+            var user = _context.Users
+                .FirstOrDefault(x => x.RefreshToken == dto.RefreshToken);
+
+            if (user == null)
+                return Unauthorized("Geçersiz refresh token");
+
+            if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return Unauthorized("Refresh token süresi dolmuş");
+
+            var newAccessToken = _jwtService.GenerateToken(user);
+
+ 
+            user.RefreshToken = GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = user.RefreshToken
+            });
+        }
+
+        private string GenerateRefreshToken()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         }
     }
-
 }

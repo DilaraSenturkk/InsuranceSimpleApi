@@ -22,12 +22,34 @@ namespace InsuranceSimpleApi.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(List<InsuranceType>), StatusCodes.Status200OK)]
-        public IActionResult GetAll()
+        [Authorize(Roles = "User")] 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 5)
         {
-            return Ok(_context.InsuranceTypes.ToList());
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest("Sayfa ve sayfa boyutu 0'dan büyük olmalı");
+
+            var query = _context.InsuranceTypes.AsQueryable();
+
+            var totalCount = query.Count();
+
+            var items = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(new
+            {
+                totalCount,
+                page,
+                pageSize,
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                data = items
+            });
         }
+
 
         [HttpPost]
         [Authorize]
