@@ -1,10 +1,10 @@
 ﻿using InsuranceSimpleApi.Domain.Models; 
 using InsuranceSimpleApi.Application.DTOs; 
 using InsuranceSimpleApi.Application.Interfaces;
-using InsuranceSimpleApi.Application.Services; 
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
+using InsuranceSimpleApi.Infrastructure.Data;
 
 namespace InsuranceSimpleApi.Application.Services
 {

@@ -9,7 +9,6 @@ namespace InsuranceSimpleApi.Api.Controllers
     {
         private readonly InsuranceReportService _reportService;
 
-        // Constructor üzerinden servisimizi içeri alıyoruz (Dependency Injection)
         public ReportsController(InsuranceReportService reportService)
         {
             _reportService = reportService;
@@ -20,14 +19,14 @@ namespace InsuranceSimpleApi.Api.Controllers
         {
      
             var (details, totalRevenue, offerCount) = await _reportService.GetSystemAnalysisAsync();
-.
+
             return Ok(new
             {
                 Status = "Success",
                 Message = "Sistem analizi başarıyla tamamlandı.",
                 Data = new
                 {
-                    AllUserOffers = details, 
+                    AllUserOffers = details, // IEnumerable burada JSON listesine dönüşür
                     TotalPotentialRevenue = totalRevenue,
                     TotalOfferCount = offerCount
                 }

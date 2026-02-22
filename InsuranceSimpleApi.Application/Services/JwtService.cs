@@ -1,4 +1,5 @@
 ﻿using InsuranceSimpleApi.Application.Interfaces;
+using InsuranceSimpleApi.Infrastructure.Data;
 using InsuranceSimpleApi.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;

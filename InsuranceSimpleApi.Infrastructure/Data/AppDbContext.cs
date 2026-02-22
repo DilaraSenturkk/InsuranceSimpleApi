@@ -1,6 +1,6 @@
 ﻿using InsuranceSimpleApi.Infrastructure;
 using InsuranceSimpleApi.Domain.Models;
-using InsuranceSimpleApi.Application.Interfaces;
+using InsuranceSimpleApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 

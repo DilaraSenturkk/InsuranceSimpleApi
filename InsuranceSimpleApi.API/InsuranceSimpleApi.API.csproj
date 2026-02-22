@@ -20,8 +20,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\InsuranceSimpleApi.Application\InsuranceSimpleApi.Application.csproj" />
-		
-		<ProjectReference Include="..\InsuranceSimpleApi.Infrastructure\InsuranceSimpleApi.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup>

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InsuranceSimpleApi.Domain\InsuranceSimpleApi.Domain.csproj" />
+    <ProjectReference Include="..\InsuranceSimpleApi.Infrastructure\InsuranceSimpleApi.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using InsuranceSimpleApi.Domain.Models;
+using InsuranceSimpleApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace InsuranceSimpleApi.Application.Services

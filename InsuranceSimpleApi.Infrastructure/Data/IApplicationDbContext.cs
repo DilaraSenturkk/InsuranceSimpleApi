@@ -1,7 +1,7 @@
 ﻿using InsuranceSimpleApi.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace InsuranceSimpleApi.Application.Interfaces
+namespace InsuranceSimpleApi.Infrastructure.Data
 {
     public interface IApplicationDbContext
     {

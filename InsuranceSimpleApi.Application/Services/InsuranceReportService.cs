@@ -1,4 +1,4 @@
-﻿using InsuranceSimpleApi.Application.Interfaces;
+﻿using InsuranceSimpleApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace InsuranceSimpleApi.Application.Services;

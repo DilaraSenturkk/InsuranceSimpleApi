@@ -1,32 +1,27 @@
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using InsuranceSimpleApi.Application; // Extension method için
 using InsuranceSimpleApi.API.Middleware;
-using InsuranceSimpleApi.Application.Interfaces;
-using InsuranceSimpleApi.Application.Models;
-using InsuranceSimpleApi.Application.Services;
-using InsuranceSimpleApi.Application.Validators;
-using InsuranceSimpleApi.Domain.Models;
-using InsuranceSimpleApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- CONTROLLERS ---
+// --- 1. KATMAN KAYITLARI (EXTENSION METHODS) ---
+
+// API sadece Application'ý bilir. 
+// Infrastructure kayýtlarý da Application üzerinden veya zincirleme þekilde eklenir.
+builder.Services.AddApplication(builder.Configuration);
+
+// --- 2. API SEVÝYESÝ SERVÝSLER ---
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 
-// --- FLUENT VALIDATION ---
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
-
-// --- ERROR HANDLING ---
+// --- 3. ERROR HANDLING & MIDDLEWARE ---
 builder.Services.AddScoped<ErrorHandlerMiddleware>();
+builder.Services.AddScoped<AuthenticatedUserMiddleware>();
 
-// --- AUTHENTICATION - JWT ---
+// --- 4. AUTHENTICATION - JWT ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -46,32 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// --- DATABASE ---
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// --- DEPENDENCY INJECTION (DI) ---
-
-// 1. Database Context Arayüz Eþlemesi
-builder.Services.AddScoped<IApplicationDbContext>(provider =>
-    provider.GetRequiredService<AppDbContext>());
-
-// 2. Kimlik Doðrulama Bilgisi (Middleware için somut sýnýf, servisler için interface)
-builder.Services.AddScoped<AuthenticatedUser>();
-builder.Services.AddScoped<IAuthenticatedUser>(sp =>
-    sp.GetRequiredService<AuthenticatedUser>());
-
-// 3. Servis Katmanlarý (Arayüzleri ile birlikte)
-builder.Services.AddScoped<PasswordService>(); 
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<InsuranceReportService>();
-
-// 4. Middleware Kayýtlarý
-builder.Services.AddScoped<AuthenticatedUserMiddleware>();
-
-// --- SWAGGER ---
-builder.Services.AddEndpointsApiExplorer();
+// --- 5. SWAGGER AYARLARI ---
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -89,11 +59,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
@@ -102,7 +68,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// --- HTTP REQUEST PIPELINE ---
+// --- 6. HTTP REQUEST PIPELINE (MIDDLEWARES) ---
 
 if (app.Environment.IsDevelopment())
 {
@@ -110,14 +76,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Hata yönetimi en üstte olmalý
-app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseMiddleware<ErrorHandlerMiddleware>(); // En dýþta hatalarý yakalar
 
 app.UseAuthentication();
-
-// AuthenticatedUserMiddleware, UseAuthentication'dan SONRA gelmelidir
-app.UseMiddleware<AuthenticatedUserMiddleware>();
-
+app.UseMiddleware<AuthenticatedUserMiddleware>(); // Auth'dan hemen sonra
 app.UseAuthorization();
 
 app.MapControllers();
