@@ -23,7 +23,7 @@ namespace InsuranceSimpleApi.Application.Services
 
         public async Task<string> RegisterAsync(RegisterDto dto)
         {
-            // Burada User nesnesi artık InsuranceSimpleApi.Domain.Models içinden geliyor
+            
             var user = new User { Username = dto.Username, Role = "User" };
             user.PasswordHash = _passwordService.Hash(user, dto.Password);
 

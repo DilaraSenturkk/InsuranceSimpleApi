@@ -12,7 +12,7 @@ public class JwtService : IJwtService
 
     public string GenerateToken(User user)
     {
-        // 1. Kullanıcı bilgilerini (Claims) tanımlayın
+
         var claims = new[]
         {
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -20,15 +20,13 @@ public class JwtService : IJwtService
         new Claim(ClaimTypes.Role, user.Role)
     };
 
-        // 2. appsettings.json dosyasındaki Key ile imzalama anahtarı oluşturun
+
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_config["Jwt:Key"])
         );
 
-        // 3. Algoritmayı belirleyerek kimlik bilgilerini oluşturun
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // 4. Token özelliklerini belirleyin (Issuer, Audience, Süre vb.)
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
@@ -37,7 +35,6 @@ public class JwtService : IJwtService
             signingCredentials: creds
         );
 
-        // 5. Token'ı string formatında döndürün
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 

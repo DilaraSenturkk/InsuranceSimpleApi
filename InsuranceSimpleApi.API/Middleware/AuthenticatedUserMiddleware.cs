@@ -7,7 +7,7 @@ namespace InsuranceSimpleApi.API.Middleware
 {
     public class AuthenticatedUserMiddleware : IMiddleware
     {
-        private readonly AuthenticatedUser _user; // IAuthenticatedUser yerine somut sınıf
+        private readonly AuthenticatedUser _user; 
 
         public AuthenticatedUserMiddleware(AuthenticatedUser user)
         {

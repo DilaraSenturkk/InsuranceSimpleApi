@@ -65,6 +65,7 @@ builder.Services.AddScoped<IAuthenticatedUser>(sp =>
 builder.Services.AddScoped<PasswordService>(); 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<InsuranceReportService>();
 
 // 4. Middleware Kayýtlarý
 builder.Services.AddScoped<AuthenticatedUserMiddleware>();
