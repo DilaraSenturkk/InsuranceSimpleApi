@@ -26,7 +26,7 @@ namespace InsuranceSimpleApi.Api.Controllers
                 Message = "Sistem analizi başarıyla tamamlandı.",
                 Data = new
                 {
-                    AllUserOffers = details, // IEnumerable burada JSON listesine dönüşür
+                    AllUserOffers = details,
                     TotalPotentialRevenue = totalRevenue,
                     TotalOfferCount = offerCount
                 }
